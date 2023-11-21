@@ -14,17 +14,17 @@ CPositionInfo positionInfo;
 datetime date = 0;
 datetime PrevBarTime;
 datetime time_0;
-input double percentRisk = 0.00015;
+double percentRisk = 0.002;
 
 // Compra
-input float RatioCompra = 5.174;
-float EntradaCompra = 0.038;
-float SLCompra = 0.043;
-
-input float RatioVenta = 3.76;
+float RatioCompra = 6.609;
+float EntradaCompra = 0.1458;
+float SLCompra = 0.1758;
+float RatioVenta = 3.847;
 float EntradaVenta = -0.001;
-float SLVenta = -0.032;
+float SLVenta = -0.031;
 
+input int ticksForActivo = 100000;
 int OnInit()
 {
    time_0 = iTime(_Symbol, PERIOD_CURRENT, 0);
@@ -49,9 +49,11 @@ bool ordenEnviada = false;
 void OnTick()
 {
    double balance = AccountInfoDouble(ACCOUNT_BALANCE);
+
    time_0 = iTime(_Symbol, PERIOD_CURRENT, 0);
    if (time_0 != PrevBarTime)
-   {
+   {  
+     
       PrevBarTime = time_0;
       double currentPriceASK = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
       double currentPriceBID = SymbolInfoDouble(_Symbol, SYMBOL_BID);
@@ -101,10 +103,10 @@ void OnTick()
          Print(VentaStopLoss);
          Print(VentaTakeProfit);
 
-         double pips = NormalizeDouble((EntradaCompraTicks - StopLoss) * 100000, _Digits);
+         double pips = NormalizeDouble((EntradaCompraTicks - StopLoss) * ticksForActivo, _Digits);
          double volume = NormalizeDouble(balance * percentRisk / pips, 2);
-         double VentaPips = NormalizeDouble((EntradaCompraTicks - StopLoss) * 100000, _Digits);
-         double VentaVolume = NormalizeDouble(balance * percentRisk / pips, 2);
+         double VentaPips = NormalizeDouble((VentaStopLoss - EntradaVentaTicks) * ticksForActivo, _Digits);
+         double VentaVolume = NormalizeDouble(balance * percentRisk / VentaPips, 2);
 
          trade.BuyLimit(volume, EntradaCompraTicks, _Symbol, NormalizeDouble(StopLoss, _Digits), NormalizeDouble(TakeProfit, _Digits), ORDER_TIME_DAY, NULL, NULL);
          trade.SellLimit(VentaVolume, EntradaVentaTicks, _Symbol, NormalizeDouble(VentaStopLoss, _Digits), NormalizeDouble(VentaTakeProfit, _Digits), ORDER_TIME_DAY, NULL, NULL);
